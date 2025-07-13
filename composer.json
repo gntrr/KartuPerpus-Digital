@@ -1,0 +1,20 @@
+{
+    "name": "kartuperpus/digital",
+    "description": "Kartu Perpustakaan Digital",
+    "type": "project",
+    "require": {
+        "php": ">=8.0"
+    },
+    "scripts": {
+        "start": "php -S 0.0.0.0:${PORT:-8080} -t .",
+        "dev": "php -S localhost:8080 -t .",
+        "post-install-cmd": [
+            "mkdir -p members",
+            "chmod 755 members"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist"
+    }
+}

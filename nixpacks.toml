@@ -1,11 +1,22 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Packages.composer"]
+nixPkgs = ["php82", "php82Packages.composer", "bash"]
 
 [phases.build]
-cmds = ["echo 'No build step needed for PHP native'"]
+cmds = [
+  "composer install --no-dev --optimize-autoloader",
+  "mkdir -p members logs public/uploads",
+  "chmod 755 members logs public/uploads",
+  "chmod +x setup.sh",
+  "echo 'Build completed successfully'"
+]
 
 [phases.start]
-cmd = "php -S 0.0.0.0:8080 -t ."
+cmd = "php -S 0.0.0.0:$PORT -t ."
 
 [variables]
 PHP_VERSION = "8.2"
+PORT = "8080"
+
+[build]
+# Ensure proper file permissions
+beforeBuildCommand = "chmod +x setup.sh"

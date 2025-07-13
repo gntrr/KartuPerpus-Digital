@@ -1,3 +1,8 @@
+<?php
+require_once 'config.php';
+session_start();
+$csrf_token = generateCSRFToken();
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -59,6 +64,7 @@
 
         <div class="register-form-container fade-in-up">
           <form method="POST" action="process_register.php" class="register-form" onsubmit="return validateForm()">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
             <div class="form-grid">
               <div class="form-group">
                 <label for="nama">

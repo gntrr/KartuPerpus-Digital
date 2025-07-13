@@ -1,0 +1,74 @@
+# Logs dan cache
+logs/
+*.log
+*.cache
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE dan editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Dependency directories
+node_modules/
+vendor/
+
+# Build artifacts
+dist/
+build/
+
+# Uploads directory contents (keep directory structure)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backup files
+*.backup
+*.bak
+
+# Cache files
+*.cache
+cache/
+
+# Database files (if using SQLite)
+*.db
+*.sqlite
+*.sqlite3
+
+# PHP specific
+.phpunit.result.cache
+phpunit.xml
+.phpunit.cache/
+
+# Composer
+composer.phar
+composer.lock
+
+# Session files
+sessions/
+
+# Error logs
+error_log
+error.log
+
+# htaccess backup
+.htaccess.bak
