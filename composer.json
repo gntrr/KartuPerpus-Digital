@@ -7,11 +7,7 @@
     },
     "scripts": {
         "start": "php -S 0.0.0.0:${PORT:-8080} -t .",
-        "dev": "php -S localhost:8080 -t .",
-        "post-install-cmd": [
-            "mkdir -p members",
-            "chmod 755 members"
-        ]
+        "dev": "php -S localhost:8080 -t ."
     },
     "config": {
         "optimize-autoloader": true,

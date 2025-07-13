@@ -3,7 +3,11 @@
 ## ✅ Status Deployment
 Project sudah dikonfigurasi dan siap untuk di-deploy ke Coolify dengan build menggunakan Nixpacks.
 
-## 📋 Checklist Deployment
+## � **FIXED: Nixpacks Configuration Issue**
+**Problem**: Failed to parse Nixpacks config file
+**Solution**: Simplified nixpacks.toml configuration, removed invalid sections
+
+## �📋 Checklist Deployment
 
 ### ✅ File Konfigurasi
 - [x] `nixpacks.toml` - Konfigurasi build Nixpacks
