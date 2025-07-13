@@ -1,0 +1,78 @@
+
+<!-- Include Chart.js -->
+<script src="public/chart.js/chart.js"></script>
+
+<div style="max-width: 800px; margin: 40px auto;">
+  <h3>📊 Statistik Aktivitas Keanggotaan</h3>
+  <canvas id="chartPendaftaran"></canvas>
+  <br>
+  <canvas id="chartProdi"></canvas>
+</div>
+
+<?php
+$weekly_counts = [];
+$prodi_counts = [];
+
+// Scan member data
+$dir = 'members';
+if (file_exists($dir)) {
+    foreach (glob("$dir/*.json") as $file) {
+        $data = json_decode(file_get_contents($file), true);
+        $week = date("o-W", filemtime($file)); // format: year-week
+        $weekly_counts[$week] = ($weekly_counts[$week] ?? 0) + 1;
+
+        $prodi = $data['prodi'] ?? 'Tidak Diketahui';
+        $prodi_counts[$prodi] = ($prodi_counts[$prodi] ?? 0) + 1;
+    }
+}
+
+ksort($weekly_counts);
+?>
+
+<script>
+const weeklyLabels = <?= json_encode(array_keys($weekly_counts)) ?>;
+const weeklyData = <?= json_encode(array_values($weekly_counts)) ?>;
+const prodiLabels = <?= json_encode(array_keys($prodi_counts)) ?>;
+const prodiData = <?= json_encode(array_values($prodi_counts)) ?>;
+
+const ctxWeek = document.getElementById('chartPendaftaran').getContext('2d');
+new Chart(ctxWeek, {
+    type: 'bar',
+    data: {
+        labels: weeklyLabels,
+        datasets: [{
+            label: 'Jumlah Pendaftar / Minggu',
+            data: weeklyData,
+            backgroundColor: '#42a5f5'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Pendaftaran per Minggu' }
+        }
+    }
+});
+
+const ctxProdi = document.getElementById('chartProdi').getContext('2d');
+new Chart(ctxProdi, {
+    type: 'pie',
+    data: {
+        labels: prodiLabels,
+        datasets: [{
+            label: 'Distribusi Prodi',
+            data: prodiData,
+            backgroundColor: [
+                '#42a5f5', '#66bb6a', '#ffa726', '#ef5350', '#ab47bc', '#26a69a'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: { display: true, text: 'Prodi / Kelas Terbanyak' }
+        }
+    }
+});
+</script>
