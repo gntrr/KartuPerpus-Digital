@@ -1,111 +1,125 @@
 # Troubleshooting Coolify Deployment
 
-## Issue: Failed to parse Nixpacks config file
+## Issue: Failed to parse Nixpacks config file (PERSISTENT)
 
 ### Problem
 ```
 Error: Failed to parse Nixpacks config file `/artifacts/thegameplan.json`
-Caused by: invalid length 0, expected struct Phase with 11 elements at line 60 column 19
+Caused by: invalid length 0, expected struct Phase with 11 elements at line 57 column 19
 ```
 
-### Solution
-The issue was with the `nixpacks.toml` configuration. Fixed by:
+### Root Cause
+Nixpacks has compatibility issues with custom PHP configuration when auto-detection conflicts with manual overrides.
 
-1. **Removed invalid `[build]` section** - This section is not valid for nixpacks
-2. **Simplified build commands** - Removed unnecessary commands
-3. **Removed PORT variable** - Let Coolify handle port configuration
-4. **Added `--no-scripts` flag** - Prevent composer scripts from running during build
+### Solution: Multiple Approaches
 
-### Fixed Configuration
+## ✅ SOLUTION 1: Auto-Detection (Recommended)
+**Status**: Implemented
 
-**nixpacks.toml**:
-```toml
-[phases.setup]
-nixPkgs = ["php82", "php82Packages.composer"]
+1. **Removed nixpacks.toml** - Let Coolify auto-detect PHP
+2. **Updated composer.json** - Added post-install setup script
+3. **Added setup.php** - Handles directory creation automatically
 
-[phases.build]
-cmds = [
-  "composer install --no-dev --optimize-autoloader --no-scripts",
-  "mkdir -p members logs public/uploads",
-  "chmod 755 members logs public/uploads"
-]
-
-[phases.start]
-cmd = "php -S 0.0.0.0:$PORT -t ."
-
-[variables]
-PHP_VERSION = "8.2"
-```
-
-**composer.json**:
+**Current configuration**:
 ```json
 {
-    "name": "kartuperpus/digital",
-    "description": "Kartu Perpustakaan Digital",
-    "type": "project",
-    "require": {
-        "php": ">=8.0"
-    },
     "scripts": {
-        "start": "php -S 0.0.0.0:${PORT:-8080} -t .",
-        "dev": "php -S localhost:8080 -t ."
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist"
+        "post-install-cmd": ["php setup.php"]
     }
 }
 ```
 
-### Key Changes
-- ✅ Removed `[build]` section from nixpacks.toml
-- ✅ Removed `bash` from nixPkgs (not needed)
-- ✅ Simplified build commands
-- ✅ Removed PORT variable (let Coolify handle it)
-- ✅ Added `--no-scripts` to composer install
-- ✅ Removed post-install-cmd from composer.json
+## ✅ SOLUTION 2: Docker Fallback
+**Status**: Ready as backup
 
-### Environment Variables for Coolify
-Set these in Coolify dashboard:
+If auto-detection still fails, switch to Docker build in Coolify:
+
+1. **Build Type**: Change from "Nixpacks" to "Dockerfile"
+2. **Dockerfile**: Already created and ready
+3. **Port**: 8080 (configured in Dockerfile)
+
+## 🔧 Implementation Steps
+
+### For Auto-Detection (Try First)
+1. **Ensure nixpacks.toml is deleted** ✅
+2. **Commit changes**:
+   ```bash
+   git add .
+   git commit -m "Remove nixpacks.toml, use auto-detection with setup script"
+   git push origin main
+   ```
+3. **Deploy in Coolify** - Should work with auto-detection
+4. **Verify** - Check `/health.php`
+
+### For Docker Fallback (If Auto-Detection Fails)
+1. **In Coolify Dashboard**:
+   - Go to your application settings
+   - Change "Build Type" from "Nixpacks" to "Dockerfile"
+   - Save settings
+2. **Deploy again**
+3. **Monitor logs** - Should build successfully with Docker
+
+## 📋 Current File Status
+
+### ✅ Working Files
+- `composer.json` - Optimized for auto-detection
+- `setup.php` - Creates required directories
+- `Dockerfile` - Ready as fallback
+- `health.php` - Health check endpoint
+- All application files
+
+### ❌ Removed Files
+- `nixpacks.toml` - Removed to prevent conflicts
+
+## 🎯 Expected Results
+
+### Auto-Detection Success
 ```
-APP_ENV=production
-APP_DEBUG=false
+Found application type: php.
+Installing PHP dependencies...
+Running post-install setup...
+✓ Created directory: members
+✓ Created directory: logs
+✓ Created directory: public/uploads
+Starting PHP application...
 ```
 
-### Next Steps
-1. Commit and push the fixed configuration
-2. Retry deployment in Coolify
-3. Check deployment logs for any other issues
-4. Access `/health.php` to verify deployment
+### Docker Success
+```
+Building Dockerfile...
+Installing dependencies...
+Configuring nginx and php-fpm...
+Health check passed...
+Application ready on port 8080
+```
 
-## Common Nixpacks Issues
-
-### 1. Invalid Configuration Sections
-- Only use `[phases.setup]`, `[phases.build]`, `[phases.start]`, and `[variables]`
-- Avoid custom sections like `[build]`
-
-### 2. Command Formatting
-- Use array format for multiple commands: `cmds = ["cmd1", "cmd2"]`
-- Use string format for single command: `cmd = "single command"`
-
-### 3. PHP Version
-- Use `php82` for PHP 8.2
-- Use `php81` for PHP 8.1
-- Always include `php82Packages.composer` for composer
-
-### 4. Port Configuration
-- Let Coolify handle port with `$PORT` variable
-- Don't hardcode port numbers in production
-
-## Verification Commands
+## 🔍 Debugging Commands
 
 After deployment, verify:
-1. Health check: `curl https://your-domain.com/health.php`
-2. Main page: `curl https://your-domain.com/`
-3. Registration: Test form submission
+```bash
+# Health check
+curl https://your-domain.com/health.php
 
-## Support
-If deployment still fails, check:
-1. Nixpacks documentation: https://nixpacks.com/docs/providers/php
-2. Coolify documentation
-3. Application logs in Coolify dashboard
+# Directory structure
+curl https://your-domain.com/health.php | grep -i "directory"
+
+# Application response
+curl https://your-domain.com/
+```
+
+## 📞 Next Steps if Both Fail
+
+1. **Check Coolify logs** for specific error messages
+2. **Try alternative PHP version** (8.1 instead of 8.2)
+3. **Contact Coolify support** with error logs
+4. **Use external hosting** (Vercel, Netlify, etc.)
+
+## 📈 Success Indicators
+- ✅ No Nixpacks parsing errors
+- ✅ Composer install completes
+- ✅ Directories created successfully
+- ✅ Health endpoint responds
+- ✅ Application loads properly
+
+---
+**Status**: Ready for deployment with auto-detection + Docker fallback

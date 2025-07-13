@@ -6,6 +6,9 @@
         "php": ">=8.0"
     },
     "scripts": {
+        "post-install-cmd": [
+            "php setup.php"
+        ],
         "start": "php -S 0.0.0.0:${PORT:-8080} -t .",
         "dev": "php -S localhost:8080 -t ."
     },
